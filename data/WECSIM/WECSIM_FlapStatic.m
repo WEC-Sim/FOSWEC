@@ -10,14 +10,21 @@ plotData=1;                                                                 % pl
 
 % directory information
 homeDir=pwd;                                                                % home directory (facilitates relative paths)
-inter_folder='./inter/Flap1Decay';                                          % location of 'Trial##' folders containing '.txt' files
+inter_folder='./inter/FlapDecay1';                                          % location of 'Trial##' folders containing '.txt' files
 load_file = 'FlapStatic.mat';                                               % '.mat' structure to be created
-final_folder = './final/Flap1Static';                                       % directory to which '.mat' structure will be saved
+final_folder = './final/FlapStatic1';                                       % directory to which '.mat' structure will be saved
 trials = [19]; % this trial number is the static offset run of the decay tests (see test log)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PROCESS INTER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter==1;
+
+    % Create output folder if it doesn't exist
+    if exist(final_folder) == 0
+        mkdir(final_folder)
+    end    
+    
     % Create structure variable Flap1Static
     for i = 1:length(trials)                                                % load in data from Trial##.txt data files
         trial_str = sprintf('%02d',trials(i));

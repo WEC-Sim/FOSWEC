@@ -7,8 +7,8 @@ clear
 % INPUTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % User Controls
-process_inter=0;
-process_final=0;
+process_inter=1;
+process_final=1;
 plotData=1;
 
 % directory information
@@ -20,11 +20,10 @@ trials = [21];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter==1;
     
-% Create output folder if it doesn't exist
-if exist(output_folder) == 0
-    mkdir(output_folder)
-end
-
+    % Create output folder if it doesn't exist
+    if exist(output_folder) == 0
+        mkdir(output_folder)
+    end
 
  % Create structure variable SurgeStatic
     for i = 1:length(trials)                                                % load in data from Trial##.txt data files

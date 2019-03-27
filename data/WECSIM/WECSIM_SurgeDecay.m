@@ -18,8 +18,8 @@ deltax = [repmat([0.15 0.20 0.10 .07],1,3)];                                % di
 dt=0.02;                                                                    % sample interval
 ramp=0.5;                                                                   % retained time (s) before release
 
-process_inter=0;                                                            % load raw .txt data files into structure
-process_final=0;                                                            % process structure data
+process_inter=1;                                                            % load raw .txt data files into structure
+process_final=1;                                                            % process structure data
 plot_data=1;                                                                % plot processes results
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -27,10 +27,11 @@ plot_data=1;                                                                % pl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if process_inter==1;
-% Create output folder if it doesn't exist
-if exist(output_folder) == 0
-    mkdir(output_folder)
-end
+
+    % Create output folder if it doesn't exist
+    if exist(output_folder) == 0
+        mkdir(output_folder)
+    end
 
  % Create structure variable SurgeDecay
     for i = 1:length(trials)

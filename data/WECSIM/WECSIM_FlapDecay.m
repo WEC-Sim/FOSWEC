@@ -9,9 +9,9 @@ clear
 
 % directory information
 homeDir=pwd;
-load_folder = './inter/Flap1Decay';
-output_variable_name = 'Flap1Decay.mat';
-output_folder = './final/Flap1Decay';
+load_folder = './inter/FlapDecay1';
+output_variable_name = 'FlapDecay1.mat';
+final_folder = './final/FlapDecay1';
 
 % Test information (see test log)
 trials = [1:5 7:17];                                                        % successful trial numbers (excluding static offset case)
@@ -22,8 +22,8 @@ dt=0.02;                                                                    % Sa
 ramp=0.5;                                                                   % by inspection, the time prior to t=0 (in corrected time series) when flap motion begins
 
 % User inputs
-process_inter=0;                                                            % load raw .txt data files into '.mat' structure
-process_final=0;                                                            % process structure data
+process_inter=1;                                                            % load raw .txt data files into '.mat' structure
+process_final=1;                                                            % process structure data
 plot_data=1;                                                                % plot processed results
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,9 +31,10 @@ plot_data=1;                                                                % pl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if process_inter==1;
+    
     % Create output folder if it doesn't exist
-    if exist(output_folder) == 0
-        mkdir(output_folder)
+    if exist(final_folder) == 0
+        mkdir(final_folder)
     end
     
     % Create structure vairable Flap1Decay
@@ -59,13 +60,18 @@ if process_inter==1;
     end
     
     
-    cd(output_folder)
+    cd(final_folder)
     save(output_variable_name,'Flap1Decay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
-    cd(output_folder)
+    if exist(final_folder)
+        cd(final_folder);
+    else
+        mkdir(final_folder);
+        cd(final_folder);
+    end
     load(output_variable_name);
 end
 
@@ -193,13 +199,13 @@ if process_final==1;
         
     end
     cd(homeDir)
-    cd(output_folder)
+    cd(final_folder)
     save(output_variable_name,'Flap1Decay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
-    cd(output_folder)
+    cd(final_folder)
     load(output_variable_name);
 end
 

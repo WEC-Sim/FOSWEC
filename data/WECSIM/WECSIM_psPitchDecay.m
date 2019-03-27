@@ -27,12 +27,12 @@ plot_data=1;                                                                % pl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PROCESS INTER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if process_inter==1
+if process_inter==1    
     
-% Create output folder if it doesn't exist
-if exist(output_folder) == 0
-    mkdir(output_folder)
-end
+    % Create output folder if it doesn't exist
+    if exist(output_folder) == 0
+        mkdir(output_folder)
+    end
 
  % Create structure variable PitchDecay
     for i = 1:length(trials)

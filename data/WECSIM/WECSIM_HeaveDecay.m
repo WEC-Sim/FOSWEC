@@ -29,10 +29,11 @@ plot_data=1;                                                                % pl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if process_inter==1;
-% Create output folder if it doesn't exist
-if exist(output_folder) == 0
-    mkdir(output_folder)
-end
+    
+    % Create output folder if it doesn't exist
+    if exist(output_folder) == 0
+        mkdir(output_folder)
+    end
 
  % Create structure variable HeaveDecay
     for i = 1:length(trials)

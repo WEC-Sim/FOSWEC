@@ -21,13 +21,13 @@ trials = [1]; % this trial number is the static offset run of the decay tests (s
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if process_inter==1;
-    % Create structure variable PitchStatic
     
     % Create output folder if it doesn't exist
     if exist(final_folder) == 0
         mkdir(final_folder)
     end
     
+    % Create structure variable PitchStatic
     for i = 1:length(trials)                                                % load in data from Trial##.txt data files
         trial_str = sprintf('%02d',trials(i));
         trial_str = ['Trial' trial_str];

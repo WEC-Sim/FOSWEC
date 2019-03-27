@@ -6,8 +6,8 @@ close all; clear;
 % INPUTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % User controls
-process_inter=0;                                                            % load raw '.txt' data files into '.mat' structure
-process_final=0;                                                            % process '.mat' structure
+process_inter=1;                                                            % load raw '.txt' data files into '.mat' structure
+process_final=1;                                                            % process '.mat' structure
 plotData=1;                                                                 % plot processed results
 
 % directory information
@@ -20,6 +20,12 @@ trials = [17]; % this trial number is the static offset run of the decay tests (
 % PROCESS INTER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter==1;
+   
+    % Create output folder if it doesn't exist
+    if exist(final_folder) == 0
+        mkdir(final_folder)
+    end
+    
     % Create structure variable HeaveStatic
     for i = 1:length(trials)                                                % load in data from Trial##.txt data files
         trial_str = sprintf('%02d',trials(i));
