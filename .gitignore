@@ -1,22 +1,20 @@
 # file types
-*.mat
+*.asv
+*.aux
 *.fig
+*.gz
+*.mat
 *.pptx
 *.ppt
 *.txt
-*.asv
-*.aux
-*.gz
+*.xlsx
 
 # files
-/docs/**/FOSWEC_testReport.pdf
-/docs/**/FOSWEC_testReport.synctex.gz
+
 
 # sub directories
 /DATA/**/**/**/*.asv
 /DATA/**/**/**/**/*.mat
-*/xArchive/**
-/docs/foswecjournal/media/xArchive/**
 
 # exemptions
 !/data/WECSIM/final/WaveTuning.mat
