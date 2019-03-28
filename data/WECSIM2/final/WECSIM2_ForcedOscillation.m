@@ -2,12 +2,12 @@
 clc; close all; clear;
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter=0; %1:process *.txt to *.mat, 0: loads *.mat
+process_inter=1; %1:process *.txt to *.mat, 0: loads *.mat
 process_final=1; % 1:process final data structure, 0: loads final *.mat
 plot_data=1; % 1 to generate plots
 
-KsPoly=[34.399565513094930,53.132452294804445,0];                          % Nonlinear hydrostatic force resisting flap motion as func of theta (rad)
-Iyy= 1.8587;                                                               % flap dry MOI about hinge (for added mass calc (kg m^2)
+% KsPoly=[34.399565513094930,53.132452294804445,0];                          % Nonlinear hydrostatic force resisting flap motion as func of theta (rad)
+% Iyy= 1.8587;                                                               % flap dry MOI about hinge (for added mass calc (kg m^2)
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,6 +16,7 @@ Iyy= 1.8587;                                                               % fla
 base_folder = pwd;
 final_folder='./ForcedOscillation';
 inter_folder='../inter/ForcedOscillation';
+log_folder = '../logs';
 inter_file='ForcedOsc_inter.mat';
 final_file='ForcedOsc_final.mat';
 
@@ -24,8 +25,8 @@ final_file='ForcedOsc_final.mat';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter==1
     % import tst log *.xlsx
-    cd(inter_folder)
-    [num,txt,raw]=xlsread('WECSIM2_exp2_ForcedOscillation.xlsx','Log');
+    cd(log_folder)
+    [num,txt,raw]=xlsread('WECSIM2_ForcedOscillation.xlsx','Log');
     data.Exp='ForcedOsc';
     data.Header=txt(18,2:end);
     data.Trial=num(~isnan(num(:,1)),1);                                     % not all number labels, see data.Notes
@@ -78,6 +79,7 @@ if process_inter==1
     ForcedOsc.theta_targ(ForcedOsc.theta_targ==999)=[];
     ForcedOsc.theta_obs(ForcedOsc.theta_obs==999)=[];
     
+    cd(inter_folder)
     %% Load data from text files
     for k=1:numTrials
         if ForcedOsc.Flag(k)==0;                                            % does not process flagged cases
@@ -205,6 +207,9 @@ if process_final==1;
                 window=peakLoc{k,1}(k2):peakLoc{k,1}(k2+1);
                 winL=length(window);
                 
+                KsPoly=[34.399565513094930,53.132452294804445,0];                          % Nonlinear hydrostatic force resisting flap motion as func of theta (rad)
+                Iyy= 1.8587;                                                               % flap dry MOI about hinge (for added mass calc (kg m^2)
+
                 %for each window, define matrix x,b to solve for A in Ax=b.
                 Theta=ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1(window);
                 HydroStat=sign(Theta).*polyval(KsPoly,abs(Theta));
@@ -414,3 +419,5 @@ if plot_data==1;
     ylabel('Damping')
     legend('c_{lin}','c_{quad}','Location','NorthWest')
 end
+
+ cd ..

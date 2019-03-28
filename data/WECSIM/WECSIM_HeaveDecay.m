@@ -4,14 +4,21 @@
 close all
 clear 
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% directory information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;
-load_folder = './inter/HeaveDecay';
-output_variable_name = 'HeaveDecay.mat';
-output_folder = './final/HeaveDecay';
+inter_folder = './inter/HeaveDecay';
+final_folder = './final/HeaveDecay';
+final_file = 'HeaveDecay.mat';
 
 % Test information (see test log)
 trials = [1:3 5:16];                                                        % Good trial numbers 
@@ -19,10 +26,6 @@ deltaz = [repmat([0.03 0.05 0.07 0.10 0.15],1,3)];                          % in
 dt=0.02;                                                                    % sampling interval
 ramp=0.5;                                                                   % retained seconds before release
 
-% User inputs
-process_inter=1;                                                            % load raw .txt data files into '.mat' structure
-process_final=1;                                                            % process structure data
-plot_data=1;                                                                % plot processed results
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PROCESS INTER
@@ -31,8 +34,8 @@ plot_data=1;                                                                % pl
 if process_inter==1;
     
     % Create output folder if it doesn't exist
-    if exist(output_folder) == 0
-        mkdir(output_folder)
+    if exist(final_folder) == 0
+        mkdir(final_folder)
     end
 
  % Create structure variable HeaveDecay
@@ -40,7 +43,7 @@ if process_inter==1;
         trial_str=sprintf('%02d',trials(i));
         TrialName{i}=strcat('Trial',trial_str);
         HeaveDecay.inter.(TrialName{i}).del_z = deltaz(i);                  % initial displacement
-        cd(load_folder)
+        cd(inter_folder)
         cd(['./' TrialName{i}])
         contents = dir( '*.txt' );
         for j = 1:length(contents)
@@ -56,14 +59,14 @@ if process_inter==1;
     end
        
 cd(homeDir);  
-cd(output_folder)    
-save(output_variable_name,'HeaveDecay') % save structure variable to final folder
+cd(final_folder)    
+save(final_file,'HeaveDecay') % save structure variable to final folder
 cd '../..'
 
 else
     cd(homeDir)
-    cd(output_folder)
-    load(output_variable_name);
+    cd(final_folder)
+    load(final_file);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -186,14 +189,14 @@ if process_final==1;
         
     end
     cd(homeDir)
-    cd(output_folder)
-    save(output_variable_name,'HeaveDecay') % save structure variable to final folder
+    cd(final_folder)
+    save(final_file,'HeaveDecay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
-    cd(output_folder)
-    load(output_variable_name);
+    cd(final_folder)
+    load(final_file);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

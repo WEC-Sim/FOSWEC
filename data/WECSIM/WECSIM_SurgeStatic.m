@@ -4,32 +4,38 @@
 close all
 clear
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% User Controls
-process_inter=1;
-process_final=1;
-plotData=1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% directory information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;
-load_folder = './inter/SurgeDecay';
-load_file = 'SurgeStatic.mat';
-output_folder = './final/SurgeStatic';
+inter_folder = './inter/SurgeDecay';
+final_folder = './final/SurgeStatic';
+final_file = 'SurgeStatic.mat';
 trials = [21];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PROCESS INTER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter==1;
     
     % Create output folder if it doesn't exist
-    if exist(output_folder) == 0
-        mkdir(output_folder)
+    if exist(final_folder) == 0
+        mkdir(final_folder)
     end
 
  % Create structure variable SurgeStatic
     for i = 1:length(trials)                                                % load in data from Trial##.txt data files
         trial_str = sprintf('%02d',trials(i));
         trial_str = ['Trial' trial_str];
-        cd(load_folder)
+        cd(inter_folder)
         cd(['./' trial_str])
         contents = dir( '*.txt' );
         for j = 1:length(contents)
@@ -46,11 +52,11 @@ if process_inter==1;
         
     end
     cd(homeDir);
-    cd(output_folder);
-    save(load_file);
+    cd(final_folder);
+    save(final_file);
 else
     cd(homeDir);
-    load(fullfile(output_folder,load_file));
+    load(fullfile(final_folder,final_file));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PROCESS FINAL
@@ -87,19 +93,19 @@ x_lim = [2200 2600; 3100 3500; 3900 4300; 4900 5300; 5900 6700; 7400 7600; 8000 
         
     end
     cd(homeDir);
-    cd(output_folder);
-    save(load_file);
+    cd(final_folder);
+    save(final_file);
     
 else
     cd(homeDir);
-    load(fullfile(output_folder,load_file));
+    load(fullfile(final_folder,final_file));
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PLOT DATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if plotData==1;
+if plot_data==1;
     
     figure
     plot(-1.*SurgeStatic.final.mean_x,SurgeStatic.final.mean_F,'ko');       % plot force vs. displacement. Flip sign (if needed) so positive displacement -> positive force

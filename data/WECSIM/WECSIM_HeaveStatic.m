@@ -3,19 +3,24 @@
 
 close all; clear;
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% User controls
-process_inter=1;                                                            % load raw '.txt' data files into '.mat' structure
-process_final=1;                                                            % process '.mat' structure
-plotData=1;                                                                 % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% directory information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;                                                                % home directory (facilitates relative paths)
 inter_folder='./inter/HeaveDecay';                                          % location of 'Trial ##' folders containing '.txt' files
-load_file = 'HeaveStatic.mat';                                              % '.mat' structure to be created
 final_folder = './final/HeaveStatic';                                       % directory to which '.mat' strucutre will be saved
+final_file = 'HeaveStatic.mat';                                              % '.mat' structure to be created
 trials = [17]; % this trial number is the static offset run of the decay tests (see test log)
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PROCESS INTER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,10 +53,10 @@ if process_inter==1;
     end
     cd(homeDir);
     cd(final_folder);
-    save(load_file);
+    save(final_file);
 else
     cd(homeDir);
-    load(fullfile(final_folder,load_file));
+    load(fullfile(final_folder,final_file));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PROCESS FINAL
@@ -89,17 +94,17 @@ if process_final==1;
     end
     cd(homeDir);
     cd(final_folder);
-    save(load_file);
+    save(final_file);
     
 else
     cd(homeDir);
-    load(fullfile(final_folder,load_file));
+    load(fullfile(final_folder,final_file));
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PLOT DATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if plotData==1;
+if plot_data==1;
     
     figure
     plot(HeaveStatic.final.mean_z,HeaveStatic.final.mean_F,'ko');           % plot force vs. displacement. Flip Load cell (if needed) so positive displacement -> positive force
@@ -128,5 +133,5 @@ if plotData==1;
 end
 
 
-
+cd ../..
 

@@ -3,24 +3,27 @@
 close all
 clear
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% directory information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;
-load_folder = './inter/SurgeDecay';
-output_variable_name = 'SurgeDecay.mat';
-output_folder = './final/SurgeDecay';
+inter_folder = './inter/SurgeDecay';
+final_folder = './final/SurgeDecay';
+final_file = 'SurgeDecay.mat';
 
 % Test information (see test log)
 trials = [8 10:20];
 deltax = [repmat([0.15 0.20 0.10 .07],1,3)];                                % displacements (m)
 dt=0.02;                                                                    % sample interval
 ramp=0.5;                                                                   % retained time (s) before release
-
-process_inter=1;                                                            % load raw .txt data files into structure
-process_final=1;                                                            % process structure data
-plot_data=1;                                                                % plot processes results
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PROCESS INTER
@@ -29,8 +32,8 @@ plot_data=1;                                                                % pl
 if process_inter==1;
 
     % Create output folder if it doesn't exist
-    if exist(output_folder) == 0
-        mkdir(output_folder)
+    if exist(final_folder) == 0
+        mkdir(final_folder)
     end
 
  % Create structure variable SurgeDecay
@@ -38,7 +41,7 @@ if process_inter==1;
         trial_str=sprintf('%02d',trials(i));
         TrialName{i}=strcat('Trial',trial_str);
         SurgeDecay.inter.(TrialName{i}).del_x = deltax(i);                  % initial displacement
-        cd(load_folder)
+        cd(inter_folder)
         cd(['./' TrialName{i}])
         contents = dir( '*.txt' );
         for j = 1:length(contents)
@@ -53,15 +56,15 @@ if process_inter==1;
         SurgeDecay.inter.(TrialName{i}).time_sec = (SurgeDecay.inter.(TrialName{i}).time - SurgeDecay.inter.(TrialName{i}).time(1))*60*60*24;
     end
        
-cd(homeDir)  
-cd(output_folder)    
-save(output_variable_name,'SurgeDecay') % save structure variable to final folder
-cd '../..'
+    cd(homeDir)  
+    cd(final_folder)    
+    save(final_file,'SurgeDecay') % save structure variable to final folder
+    cd '../..'
 
 else
     cd(homeDir)
-    cd(output_folder)
-    load(output_variable_name);
+    cd(final_folder)
+    load(final_file);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,14 +184,14 @@ if process_final==1;
         
     end
     cd(homeDir)
-    cd(output_folder)
-    save(output_variable_name,'SurgeDecay') % save structure variable to final folder
+    cd(final_folder)
+    save(final_file,'SurgeDecay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
-    cd(output_folder)
-    load(output_variable_name);
+    cd(final_folder)
+    load(final_file);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

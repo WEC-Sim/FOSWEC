@@ -11,8 +11,8 @@ clc; close all; clear all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter = 0;   % 1:processes inter data, 0:loads inter *.mat
-process_final = 0;   % 1:processes final data, 0:loads final *.mat
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final = 1;   % 1:processes final data, 0:loads final *.mat
 plot_data = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -23,6 +23,7 @@ plot_data = 1;
 base_folder = pwd;
 final_folder = './Config4Irr';
 inter_folder = '../inter/Config4Irr';
+log_folder = '../logs';
 inter_file = 'Config4Irr_inter.mat';
 final_file = 'Config4Irr_final.mat';
 addpath(genpath(strrep(pwd,'\WECSIM2\final\Config4Irr','')))
@@ -33,7 +34,7 @@ addpath(genpath(strrep(pwd,'\WECSIM2\final\Config4Irr','')))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter == 1
     % import test log *.xlsx
-    cd(inter_folder)
+    cd(log_folder)
     [num,txt,raw]   = xlsread('WECSIM2_Config4Irr.xlsx','Log');
     data.Exp        = 'Config4Irr';
     data.Header     = txt(5,2:end);
@@ -50,6 +51,7 @@ if process_inter == 1
     Config4Irr.H          = data.H;
     Config4Irr.Flag       = data.Flag;
     
+    cd(inter_folder)
     % import 'inter' data for all trials
     numTrials = length(data.Trial);
     for i = 1:numTrials
@@ -376,9 +378,9 @@ if plot_data == 1
 
             end
             figure(2*(k3-1)+1)
-            legend(legvec,'Location','NorthEast')
+            legend(legvec,'Location','NorthEast');
             figure(2*(k3-1)+2)
-            legend(legvec,'Location','NorthEast')
+            legend(legvec,'Location','NorthEast');
             figure(2*(k3-1)+1);
          end
         figure(2*(k3-1)+1)

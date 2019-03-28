@@ -1,18 +1,23 @@
 % A script to calculate the hydrostatic coefficient for FOSWEC flap.
 close all; clear;
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% User controls
-process_inter=1;                                                            % load raw '.txt' data files into '.mat' structure
-process_final=1;                                                            % process '.mat' structure
-plotData=1;                                                                 % plot processed results
 
-% directory information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;                                                                % home directory (facilitates relative paths)
 inter_folder='./inter/FlapDecay1';                                          % location of 'Trial##' folders containing '.txt' files
-load_file = 'FlapStatic.mat';                                               % '.mat' structure to be created
 final_folder = './final/FlapStatic1';                                       % directory to which '.mat' structure will be saved
+final_file = 'FlapStatic.mat';                                               % '.mat' structure to be created
 trials = [19]; % this trial number is the static offset run of the decay tests (see test log)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,10 +52,10 @@ if process_inter==1;
     end
     cd(homeDir);
     cd(final_folder);
-    save(load_file);
+    save(final_file);
 else
     cd(homeDir);
-    load(fullfile(final_folder,load_file));
+    load(fullfile(final_folder,final_file));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PROCESS FINAL
@@ -92,17 +97,17 @@ if process_final==1;
     end
     cd(homeDir);
     cd(final_folder);
-    save(load_file);
+    save(final_file);
     
 else
     cd(homeDir);
-    load(fullfile(final_folder,load_file));
+    load(fullfile(final_folder,final_file));
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PLOT DATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if plotData==1    
+if plot_data==1    
     
     figure;                                                                 % plot force vs. displacement. Flip sign (if needed) so positive displacement -> positive force
     plot(-1.*Flap1Static.final.mean_x,Flap1Static.final.mean_F,'ko');
@@ -133,4 +138,4 @@ if plotData==1
 end
 
 
-
+cd ../..

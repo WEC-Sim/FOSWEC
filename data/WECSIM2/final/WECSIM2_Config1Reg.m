@@ -9,7 +9,7 @@ clc; close all; clear all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
 process_final =1;   % 1:processes final data, 0:loads final *.mat
-plot_data = 1; 
+plot_data=1;        % plot processed results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

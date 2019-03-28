@@ -4,14 +4,21 @@
 close all
 clear
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% directory information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;
-load_folder = './inter/PitchDecay';
-output_variable_name = 'PitchDecay.mat';
-output_folder = './final/PitchDecay';
+inter_folder = './inter/PitchDecay';
+final_folder = './final/PitchDecay';
+final_file = 'PitchDecay.mat';
 
 % test information (see test log)
 trials = [1:15];                                                            % good trial numbers             
@@ -19,10 +26,6 @@ delta_theta = [repmat([2 3 5 7 8.4],1,3)];                                  % in
 dt=0.02;                                                                    % sampling interval
 ramp=0.44;                                                                   % retained seconds before release
 
-% User inputs
-process_inter=1;                                                            % puts raw .txt files into data structure
-process_final=1;                                                            % processes data structure
-plot_data=1;                                                                % plots results of processing
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PROCESS INTER
@@ -30,8 +33,8 @@ plot_data=1;                                                                % pl
 if process_inter==1    
     
     % Create output folder if it doesn't exist
-    if exist(output_folder) == 0
-        mkdir(output_folder)
+    if exist(final_folder) == 0
+        mkdir(final_folder)
     end
 
  % Create structure variable PitchDecay
@@ -39,7 +42,7 @@ if process_inter==1
         trial_str=sprintf('%02d',trials(i));
         TrialName{i}=strcat('Trial',trial_str);
         PitchDecay.inter.(TrialName{i}).del_theta = delta_theta(i);                  % initial theta displacement
-        cd(load_folder)
+        cd(inter_folder)
         cd(['./' TrialName{i}])
         contents = dir( '*.txt' );
         for j = 1:length(contents)
@@ -55,14 +58,14 @@ if process_inter==1
     end
        
 cd(homeDir)  
-cd(output_folder)    
-save(output_variable_name,'PitchDecay') % save structure variable to final folder
+cd(final_folder)    
+save(final_file,'PitchDecay') % save structure variable to final folder
 cd '../..'
 
 else
     cd(homeDir)
-    cd(output_folder)
-    load(output_variable_name);
+    cd(final_folder)
+    load(final_file);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,14 +190,14 @@ if process_final==1;
         
  end
     cd(homeDir)
-    cd(output_folder)
-    save(output_variable_name,'PitchDecay') % save structure variable to final folder
+    cd(final_folder)
+    save(final_file,'PitchDecay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
-    cd(output_folder)
-    load(output_variable_name);
+    cd(final_folder)
+    load(final_file);
 end
 
 

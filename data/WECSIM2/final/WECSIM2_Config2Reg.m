@@ -7,8 +7,8 @@ clc; close all; clear all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter = 0;   % 1:processes inter data, 0:loads inter *.mat
-process_final = 0;   % 1:processes final data, 0:loads final *.mat
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final = 1;   % 1:processes final data, 0:loads final *.mat
 plot_data = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -19,6 +19,7 @@ plot_data = 1;
 base_folder=pwd;
 final_folder = './Config2Reg';
 inter_folder = '../inter/Config2Reg';
+log_folder = '../logs';
 inter_file = 'Config2Reg_inter.mat';
 final_file = 'Config2Reg_final.mat';
 addpath(genpath(strrep(pwd,'\WECSIM2\final\Config2Reg','')))
@@ -30,7 +31,7 @@ addpath(genpath(strrep(pwd,'\WECSIM2\final\Config2Reg','')))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if process_inter == 1
     % import test log *.xlsx
-    cd(inter_folder);
+    cd(log_folder);
     [num,txt,raw] = xlsread('WECSIM2_Config2Reg.xlsx','Log');
     data.Exp = 'Config2Reg';
     data.Header = txt(5,2:end);
@@ -47,6 +48,7 @@ if process_inter == 1
     Config2Reg.H          = data.H;   
     Config2Reg.Flag       = data.Flag;   
     
+    cd(inter_folder)    
     % import 'inter' data for all trials     
     numTrials = length(data.Trial);
     for i = 1:numTrials                                           

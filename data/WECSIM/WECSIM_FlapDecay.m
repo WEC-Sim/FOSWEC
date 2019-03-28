@@ -4,14 +4,22 @@
 close all
 clear
 
-% INPUTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% User Controls
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
+plot_data=1;        % plot processed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% directory information
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Directory Info
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 homeDir=pwd;
-load_folder = './inter/FlapDecay1';
-output_variable_name = 'FlapDecay1.mat';
+inter_folder = './inter/FlapDecay1';
 final_folder = './final/FlapDecay1';
+final_file = 'FlapDecay1.mat';
 
 % Test information (see test log)
 trials = [1:5 7:17];                                                        % successful trial numbers (excluding static offset case)
@@ -20,11 +28,6 @@ theta_i = [0.91 0.4 1.4 2.4 1.5 0.71 0.8 0.7 0.9 0.9 0.9 0.7...             % in
     0.9 0.7 0.7 0.7];
 dt=0.02;                                                                    % Sampling interval of FOSWEC mounted sensors
 ramp=0.5;                                                                   % by inspection, the time prior to t=0 (in corrected time series) when flap motion begins
-
-% User inputs
-process_inter=1;                                                            % load raw .txt data files into '.mat' structure
-process_final=1;                                                            % process structure data
-plot_data=1;                                                                % plot processed results
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PROCESS INTER
@@ -43,7 +46,7 @@ if process_inter==1;
         TrialName{i}=strcat('Trial',trial_str);
         Flap1Decay.inter.(TrialName{i}).del_theta = delta_theta(i);         % initial theta displacement
         Flap1Decay.inter.(TrialName{i}).theta_i = theta_i(i);               % steady-state theta (after decay motion has dissipated)
-        cd(load_folder)
+        cd(inter_folder)
         cd(['./' TrialName{i}])
         contents = dir( '*.txt' );
         for j = 1:length(contents)
@@ -57,22 +60,16 @@ if process_inter==1;
         Flap1Decay.inter.(TrialName{i}).datetime_utc = datetime(date_utc,'TimeZone','UTC');
         Flap1Decay.inter.(TrialName{i}).datetime_local = datetime(Flap1Decay.inter.(TrialName{i}).datetime_utc,'TimeZone','America/Los_Angeles');
         Flap1Decay.inter.(TrialName{i}).time_sec = (Flap1Decay.inter.(TrialName{i}).time - Flap1Decay.inter.(TrialName{i}).time(1))*60*60*24;
-    end
-    
+    end    
     
     cd(final_folder)
-    save(output_variable_name,'Flap1Decay') % save structure variable to final folder
+    save(final_file,'Flap1Decay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
-    if exist(final_folder)
-        cd(final_folder);
-    else
-        mkdir(final_folder);
-        cd(final_folder);
-    end
-    load(output_variable_name);
+    cd(final_folder);
+    load(final_file);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -200,13 +197,13 @@ if process_final==1;
     end
     cd(homeDir)
     cd(final_folder)
-    save(output_variable_name,'Flap1Decay') % save structure variable to final folder
+    save(final_file,'Flap1Decay') % save structure variable to final folder
     cd '../..'
     
 else
     cd(homeDir)
     cd(final_folder)
-    load(output_variable_name);
+    load(final_file);
 end
 
 
