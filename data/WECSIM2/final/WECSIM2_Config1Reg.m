@@ -7,8 +7,8 @@ clc; close all; clear all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
-process_final =1;   % 1:processes final data, 0:loads final *.mat
+process_inter = 0;   % 1:processes inter data, 0:loads inter *.mat
+process_final =0;   % 1:processes final data, 0:loads final *.mat
 plot_data=1;        % plot processed results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -257,7 +257,10 @@ end
 %% Plot Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if plot_data == 1
-    [Hunq,ia,ic]=unique(Config1Reg.H);
+%     [Hunq,ia,ic]=unique(Config1Reg.H);
+    journal(1:7) = 0.0450;
+    journal(8:13)= 0.1360;
+    [Hunq,ia,ic]=unique(journal);
     queryVec={'flapPosF1'};                                                 % desired signals to analyze
     colorvec={'b','r','g','k'};                                             % color code based on wave height
     labelVec={'RAO deg/m','RAO deg/m','RAO m/m','RAO m/m','RAO deg/m'};     % Axis label unit, should correspond to query vec.
@@ -267,10 +270,15 @@ if plot_data == 1
             goodidx=find(ic==k2);
             figure(2*k-1);                                                  % error bar +/- 1 std deviation of mean
             errorbar(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmean(goodidx),Config1Reg.final.(queryVec{k}).RAOstd(goodidx)...
-                ,'s','Color',colorvec{ic(goodidx(1))},'MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
+                ,'s');
             hold on
-            scatter(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmag(goodidx),'^',...
-                colorvec{ic(goodidx(1))},'filled');
+%             scatter(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmean(goodidx),'s','filled',);
+%             hold on
+%             errorbar(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmean(goodidx),Config1Reg.final.(queryVec{k}).RAOstd(goodidx)...
+%                 ,'s','Color',colorvec{ic(goodidx(1))},'MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
+%             hold on
+%             scatter(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmag(goodidx),'^',...
+%                 colorvec{ic(goodidx(1))},'filled');
             if k2==1;
             xlabel('Freq (rad/s)')
             ylabel(labelVec{k})
