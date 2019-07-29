@@ -2,14 +2,13 @@
 % CompareBEMForcedOsc code compares linear damping, added mass, and
 % excitation coefficients as a function of frequency between the experiment
 % and BEM code
-
 clear; close all; clc;
 
 % directory setup
 base_folder=pwd;
 ForcOsc_folder='./final/ForcedOscillation';
-BEMpathname='..\..\..\..\FOSWEC_Sims\sims\hydroData';
-filename='flap_WAMIT_KR.h5';
+BEMpathname='..\..\..\FOSWEC_Sims\sims\hydroData';
+filename='flap_WAMIT.h5';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Load experiment data
@@ -25,25 +24,19 @@ for k=1:length(wExpU);
         goodIdx2=find(k2==ie);
         idx=intersect(goodIdx,goodIdx2);                                    % find oscillations at a given frequency and amplitude
         for k3=1:length(idx)
-            Bexp(k,k2,k3)=ForcedOsc.final.CvTonly(idx(k3));                 % linear damping coeffs (assuming just linear damping)
-            Bexpd(k,k2,k3)=ForcedOsc.final.CdTonly(idx(k3));                % quad. damping coeffs (assuming just quadratic damping)
+            Bexp(k,k2,k3)=ForcedOsc.final.CvTonly(idx(k3));                 % linear damping coeffs
             BexpStd(k,k2,k3)=ForcedOsc.final.CvTonlystd(idx(k3));           % linear damping est. standard deviations (cycle-to-cycle)
-            BexpStdd(k,k2,k3)=ForcedOsc.final.CdTonlystd(idx(k3));          % quad damping est. standard deviations (cycle-to-cycle)
             Aexp(k,k2,k3)=ForcedOsc.final.AT(idx(k3));                      % added mass estimate
             AexpStd(k,k2,k3)=ForcedOsc.final.Astd(idx(k3));                 % added mass est. standard deviations
         end
         Bexp(k,k2)=mean(Bexp(k,k2,Bexp(k,k2,:)>0));                         % average statistics of repeated trials at a given freq and amp.
-        Bexpd(k,k2)=mean(Bexpd(k,k2,Bexpd(k,k2,:)>0));                      
         BexpStd(k,k2)=mean(BexpStd(k,k2,Bexp(k,k2,:)>0));
-        BexpStdd(k,k2)=mean(BexpStdd(k,k2,Bexpd(k,k2,:)>0));
         Aexp(k,k2)=mean(Aexp(k,k2,Aexp(k,k2,:)>0));
         AexpStd(k,k2)=mean(AexpStd(k,k2,Aexp(k,k2,:)>0));
     end
 end
 Bexp=Bexp(:,:,1);                                                           % utilize averages for plotting
-Bexpd=Bexpd(:,:,1);
 BexpStd=BexpStd(:,:,1);
-BexpStdd=BexpStdd(:,:,1);
 Aexp=Aexp(:,:,1);
 AexpStd=AexpStd(:,:,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,18 +80,18 @@ off=0;                                                                      % a 
 for k2=1:length(magU)
     switch k2                                                               % plot format selected based on amplitude
         case 1
-            cStr='bo';
-            fStr='b';
+            cStr='o';
+            fStr=[0 0.4470 0.7410];
         case 2
-            cStr='rs';
-            fStr='r';
+            cStr='s';
+            fStr=[0.8500 0.3250 0.0980];
         case 3
-            cStr='g^';
-            fStr='g';
+            cStr='^';
+            fStr=[0.929 0.694 0.125];
     end
-    subplot(1,3,1)                                                          % plot experiment linear damping estimate
+    subplot(1,2,1)                                                          % plot experiment linear damping estimate
     ax(k2)=plot(wExpU(~isnan(Bexp(:,k2)))+off,Bexp(~isnan(Bexp(:,k2)),k2)...
-        ,cStr,'MarkerFaceColor',fStr,'LineWidth',1.2);
+        ,cStr,'MarkerFaceColor',fStr,'MarkerEdgeColor',fStr,'LineWidth',1.2);
     if k2==1;
         hold on
         grid on;
@@ -108,21 +101,10 @@ for k2=1:length(magU)
             Bexp(k,k2)-BexpStd(k,k2)],'Color',fStr)
         end
         
-    subplot(1,3,2)                                                          % plot experiment quadratic damping estimate
-    ax(k2)=plot(wExpU(~isnan(Bexpd(:,k2)))+off,Bexpd(~isnan(Bexpd(:,k2)),k2)...
-        ,cStr,'MarkerFaceColor',fStr,'LineWidth',1.2);
-    if k2==1;
-        hold on
-        grid on;
-    end
-        for k=1:length(wExpU)                                               % add error bars
-            line([wExpU(k)+off,wExpU(k)+off],[Bexpd(k,k2)+2*BexpStdd(k,k2),...% Lines bound +/- 2 sigma
-            Bexpd(k,k2)-BexpStdd(k,k2)],'Color',fStr)
-        end   
         
-    subplot(1,3,3)                                                          % plot added mass estimate
+    subplot(1,2,2)                                                          % plot added mass estimate
     ax(k2)=plot(wExpU(~isnan(Aexp(:,k2)))+off,Aexp(~isnan(Aexp(:,k2)),k2)...
-        ,cStr,'MarkerFaceColor',fStr,'LineWidth',1.2);
+        ,cStr,'MarkerFaceColor',fStr,'MarkerEdgeColor',fStr,'LineWidth',1.2);
     if k2==1;
         hold on
         grid on
@@ -137,34 +119,91 @@ end
 
 %% Add in experiment estimates from regression and numerical estimates 
 % linear damping
-subplot(1,3,1)
-ax(k2+1)=plot(wExpU(1:end-1),fliplr(ForcedOsc.final.clin(2:end)),'d',...    % linear damping estimate from regression method
-    'MarkerFaceColor',[0.5 0.5 0.5]);
-ax(k2+2)=plot(wBEM,bBEM55,'s-k');                                           % BEM estimate of linear damping
+subplot(1,2,1)
+ax(k2+1)=plot(wBEM,bBEM55,'s-k');                                           % BEM estimate of linear damping
 xlabel('\omega [rad/s]')
 ylabel('Total Damping, C_{Tot} [N m s]')
 xlim([0 8]);
 
-% quadratic damping
-subplot(1,3,2)
-ax(k2+1)=plot(wExpU(1:end),fliplr(ForcedOsc.final.cquad(1:end)),'d',...     % quad. damping estimate from regression method
-    'MarkerFaceColor',[0.5 0.5 0.5]);                                       % there is no BEM estimate of quadratic damping
-xlim([0 8]);
-xlabel('\omega [rad/s]')
-ylabel('Drag, C_D [N m s^2]')
-
 % added mass
-subplot(1,3,3)
-ax(k2+1)=plot(wExpU(1:end),fliplr(ForcedOsc.final.Amass(1:end)),'d',...     % added mass damping from regression method (average over all oscillation amplitudes)
-    'MarkerFaceColor',[0.5 0.5 0.5]);
-ax2(k2+2)=plot(wBEM,aBEM55,'s-k');                                          % BEM estimate of added mass
+subplot(1,2,2)
+ax(k2+1)=plot(wBEM,aBEM55,'s-k');                                          % BEM estimate of added mass
 xlabel('\omega [rad/s]')
 ylabel('Added Mass, A [kg m^2]')
 xlim([0 8]);
 legend([ax],{'\Delta \Theta=10^o', '\Delta \Theta=15^o',...
-    '\Delta \Theta=20^o','Regression','WAMIT'},'Location', 'South')
+    '\Delta \Theta=20^o','WAMIT'},'Location', 'South')
 
+%% Create three fits 
+lowAmpA=Aexp(:,1);
+medAmpA=Aexp(:,2);
+hiAmpA=Aexp(:,3);
 
+% linear fit
+lowAmpfit1=polyfit(wExpU(~isnan(lowAmpA)),lowAmpA(~isnan(lowAmpA)),1);
+medAmpfit1=polyfit(wExpU(~isnan(medAmpA)),medAmpA(~isnan(medAmpA)),1);
+hiAmpfit1=polyfit(wExpU(~isnan(hiAmpA)),hiAmpA(~isnan(hiAmpA)),1);
+% fit errors
+lAfErr(1)=norm((lowAmpA(~isnan(lowAmpA))-polyval(lowAmpfit1,wExpU(~isnan(lowAmpA)))));
+mAfErr(1)=norm((medAmpA(~isnan(medAmpA))-polyval(medAmpfit1,wExpU(~isnan(medAmpA)))));
+hAfErr(1)=norm((hiAmpA(~isnan(hiAmpA))-polyval(hiAmpfit1,wExpU(~isnan(hiAmpA)))));
 
+% quad fit
+lowAmpfit2=polyfit(wExpU(~isnan(lowAmpA)),lowAmpA(~isnan(lowAmpA)),2)
+medAmpfit2=polyfit(wExpU(~isnan(medAmpA)),medAmpA(~isnan(medAmpA)),2)
+hiAmpfit2=polyfit(wExpU(~isnan(hiAmpA)),hiAmpA(~isnan(hiAmpA)),2)
+% fit errors
+lAfErr(2)=norm((lowAmpA(~isnan(lowAmpA))-polyval(lowAmpfit2,wExpU(~isnan(lowAmpA)))));
+mAfErr(2)=norm((medAmpA(~isnan(medAmpA))-polyval(medAmpfit2,wExpU(~isnan(medAmpA)))));
+hAfErr(2)=norm((hiAmpA(~isnan(hiAmpA))-polyval(hiAmpfit2,wExpU(~isnan(hiAmpA)))));
 
+% cubic fit
+lowAmpfit3=polyfit(wExpU(~isnan(lowAmpA)),lowAmpA(~isnan(lowAmpA)),3)
+medAmpfit3=polyfit(wExpU(~isnan(medAmpA)),medAmpA(~isnan(medAmpA)),3)
+hiAmpfit3=polyfit(wExpU(~isnan(hiAmpA)),hiAmpA(~isnan(hiAmpA)),3)
+% fit errors
+lAfErr(3)=norm((lowAmpA(~isnan(lowAmpA))-polyval(lowAmpfit3,wExpU(~isnan(lowAmpA)))));
+mAfErr(3)=norm((medAmpA(~isnan(medAmpA))-polyval(medAmpfit3,wExpU(~isnan(medAmpA)))));
+hAfErr(3)=norm((hiAmpA(~isnan(hiAmpA))-polyval(hiAmpfit3,wExpU(~isnan(hiAmpA)))));
+
+% quart fit
+lowAmpfit4=polyfit(wExpU(~isnan(lowAmpA)),lowAmpA(~isnan(lowAmpA)),4)
+medAmpfit4=polyfit(wExpU(~isnan(medAmpA)),medAmpA(~isnan(medAmpA)),4)
+hiAmpfit4=polyfit(wExpU(~isnan(hiAmpA)),hiAmpA(~isnan(hiAmpA)),4)
+% fit errors
+lAfErr(4)=norm((lowAmpA(~isnan(lowAmpA))-polyval(lowAmpfit4,wExpU(~isnan(lowAmpA)))));
+mAfErr(4)=norm((medAmpA(~isnan(medAmpA))-polyval(medAmpfit4,wExpU(~isnan(medAmpA)))));
+hAfErr(4)=norm((hiAmpA(~isnan(hiAmpA))-polyval(hiAmpfit4,wExpU(~isnan(hiAmpA)))));
+
+% quint fit (highest order possible)
+lowAmpfit5=polyfit(wExpU(~isnan(lowAmpA)),lowAmpA(~isnan(lowAmpA)),5)
+medAmpfit5=polyfit(wExpU(~isnan(medAmpA)),medAmpA(~isnan(medAmpA)),5)
+hiAmpfit5=polyfit(wExpU(~isnan(hiAmpA)),hiAmpA(~isnan(hiAmpA)),5)
+% fit errors
+lAfErr(5)=norm((lowAmpA(~isnan(lowAmpA))-polyval(lowAmpfit5,wExpU(~isnan(lowAmpA)))));
+mAfErr(5)=norm((medAmpA(~isnan(medAmpA))-polyval(medAmpfit5,wExpU(~isnan(medAmpA)))));
+hAfErr(5)=norm((hiAmpA(~isnan(hiAmpA))-polyval(hiAmpfit5,wExpU(~isnan(hiAmpA)))));
+
+figure; clf;
+scatter([1:1:5],lAfErr)
+hold on; grid on;
+scatter([1:1:5],mAfErr)
+scatter([1:1:5],hAfErr)
+legend('Low Amp','Med Amp','High Amp')
+xlabel('Polynomial Fit Order')
+ylabel('Norm. Fit error')
+
+% apply fits at BEM frequencys
+
+AlowFit=polyval(lowAmpfit2,wBEM);
+AmedFit=polyval(medAmpfit2,wBEM);
+AhiFit=polyval(hiAmpfit2,wBEM);
+
+%figure(1); 
+%subplot(1,2,2)
+%plot(wBEM,AlowFit,'--b')
+%plot(wBEM,AmedFit,'--r')
+%plot(wBEM,AhiFit,'--g')
+
+save('AddedMassFits', 'AlowFit', 'AmedFit', 'AhiFit','wBEM')
 

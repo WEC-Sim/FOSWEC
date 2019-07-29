@@ -22,7 +22,7 @@ plot_data =1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 base_folder = pwd;
 final_folder = './Config4Reg';
-inter_folder = '../inter/Config4Reg';
+inter_folder = 'C:\Users\dforbus\FOSWEC\data\WECSIM2\inter\Config4Reg';
 log_folder = '../logs';
 inter_file = 'Config4Reg_inter.mat';
 final_file = 'Config4Reg_final.mat';
@@ -297,7 +297,7 @@ end
 if plot_data == 1
     [Hunq,ia,ic]=unique(Config4Reg.H);
     queryVec={'flapPosF1','flapPosF2','platPosz','platPosx','platPosRy'};    % desired signals to analyze
-    colorvec={'b','r','g','k'};                                              % color code based on wave height
+    colorvec={[0.8500 0.3250 0.0980],[0.929 0.694 0.125],[0.494 0.184 0.556]};                                          % color code based on wave height
     labelVec={'RAO deg/m','RAO deg/m','RAO m/m','RAO m/m','RAO deg/m'};
     for k=1:length(queryVec)
         for k2=1:length(Hunq)

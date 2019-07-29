@@ -5,11 +5,11 @@
 % V2: Uses FOSWEC mounted sensors
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; clear all;
-%close all;
+close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_inter = 0;   % 1:processes inter data, 0:loads inter *.mat
 process_final = 1;   % 1:processes final data, 0:loads final *.mat
 plot_data =1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,7 +20,7 @@ plot_data =1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 base_folder = pwd;
 final_folder = './Config4Reg';
-inter_folder = '../inter/Config4Reg';
+inter_folder = 'C:\Users\dforbus\FOSWEC\data\WECSIM2\inter\Config4Reg';
 log_folder = '../logs';
 inter_file = 'Config4Reg_inter.mat';
 final_file = 'Config4Reg_final.mat';
@@ -291,7 +291,7 @@ end
 if plot_data == 1
     [Hunq,ia,ic]=unique(Config4Reg.H);
     queryVec={'flapPosF1','flapPosF2','platPosz','platPosx','platPosRy'};    % desired signals to analyze
-    colorvec={'b','r','g','k'};
+     colorvec={[0.8500 0.3250 0.0980],[0.929 0.694 0.125],[0.494 0.184 0.556]};                                          % color code based on wave height
     labelVec={'RAO deg/m','RAO deg/m','RAO m/m','RAO m/m','RAO deg/m'};
     for k=1:length(queryVec)
         % color code based upon Hsig
@@ -299,7 +299,7 @@ if plot_data == 1
             goodidx=find(ic==k2);
             figure(2*k-1);
             errorbar(2*pi./Config4Reg.T(goodidx),Config4Reg.final.(queryVec{k}).RAOmean(goodidx),Config4Reg.final.(queryVec{k}).RAOstd(goodidx)...
-                ,'s','Color',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
+                ,'s','Color',colorvec{ic(goodidx(1))},'MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
             hold on
             %scatter(2*pi./Config4Reg.T(goodidx),Config4Reg.final.(queryVec{k}).RAOmag(goodidx),'^',...
              %   colorvec{ic(goodidx(1))});

@@ -8,7 +8,7 @@ clc; close all; clear all;
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 process_inter = 0;   % 1:processes inter data, 0:loads inter *.mat
-process_final =0;   % 1:processes final data, 0:loads final *.mat
+process_final =1;   % 1:processes final data, 0:loads final *.mat
 plot_data=1;        % plot processed results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -18,7 +18,7 @@ plot_data=1;        % plot processed results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 base_folder = pwd;
 final_folder = './Config1Reg';
-inter_folder = '../inter/Config1Reg';
+inter_folder = 'C:\Users\dforbus\FOSWEC\data\WECSIM2\inter\Config1Reg';
 log_folder = '../logs';
 inter_file = 'Config1Reg_inter.mat';
 final_file = 'Config1Reg_final.mat';
@@ -205,7 +205,8 @@ if process_final == 1
                 %% Time-domain RAO Calculation: find peaks
                 [peakLoc_max,peakMag_max]=peakfinder(detrend(varname),thresh,-5,1,false,false);
                 [peakLoc_min,peakMag_min]=peakfinder(detrend(varname),thresh,5,-1,false,false);
-                offset=(median(peakMag_max)-median(peakMag_min))/2 + median(peakMag_min); % check for assymetry
+                %offset=(median(peakMag_max)-median(peakMag_min))/2 + median(peakMag_min); % check for assymetry
+                offset=abs(median(peakMag_max))-abs(median(peakMag_min));
                 
                 % calculate statistics
                 magmean=median(peakMag_max)-median(peakMag_min);
@@ -257,20 +258,25 @@ end
 %% Plot Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if plot_data == 1
-%     [Hunq,ia,ic]=unique(Config1Reg.H);
+   [Hunq,ia,ic]=unique(Config1Reg.H);
+   if min(Hunq)<0.03;
+       minIdx=2;
+   else 
+       minIdx=1;
+   end
     journal(1:7) = 0.0450;
     journal(8:13)= 0.1360;
-    [Hunq,ia,ic]=unique(journal);
+    %[Hunq,ia,ic]=unique(journal);
     queryVec={'flapPosF1'};                                                 % desired signals to analyze
-    colorvec={'b','r','g','k'};                                             % color code based on wave height
+    colorvec={[0 0.4470 0.7410],[0.8500 0.3250 0.0980],[0.929 0.694 0.125],[0.494 0.184 0.556]};                                             % color code based on wave height
     labelVec={'RAO deg/m','RAO deg/m','RAO m/m','RAO m/m','RAO deg/m'};     % Axis label unit, should correspond to query vec.
     for k=1:length(queryVec)
 
-        for k2=1:length(Hunq)
+        for k2=minIdx:length(Hunq)
             goodidx=find(ic==k2);
             figure(2*k-1);                                                  % error bar +/- 1 std deviation of mean
             errorbar(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmean(goodidx),Config1Reg.final.(queryVec{k}).RAOstd(goodidx)...
-                ,'s');
+                ,'s','Color',colorvec{ic(goodidx(1))},'MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
             hold on
 %             scatter(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmean(goodidx),'s','filled',);
 %             hold on
@@ -279,11 +285,11 @@ if plot_data == 1
 %             hold on
 %             scatter(2*pi./Config1Reg.T(goodidx),Config1Reg.final.(queryVec{k}).RAOmag(goodidx),'^',...
 %                 colorvec{ic(goodidx(1))},'filled');
-            if k2==1;
+            %if k2==1;
             xlabel('Freq (rad/s)')
             ylabel(labelVec{k})
             grid on
-            end
+            %end
             savefig(['Config1Reg_RAO_',queryVec{k},'.fig'])
             
             figure(2*k);                                                    % phase plot

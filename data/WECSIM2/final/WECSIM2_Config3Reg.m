@@ -10,7 +10,7 @@ clc; close all; clear all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter = 1;   % 1:processes inter data, 0:loads inter *.mat
+process_inter = 0;   % 1:processes inter data, 0:loads inter *.mat
 process_final = 1;   % 1:processes final data, 0:loads final *.mat
 plot_data = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,7 +21,7 @@ plot_data = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 base_folder = pwd;
 final_folder = './Config3Reg';
-inter_folder = '../inter/Config3Reg';
+inter_folder = 'C:\Users\dforbus\FOSWEC\data\WECSIM2\inter\Config3Reg';
 log_folder = '../logs';
 inter_file = 'Config3Reg_inter.mat';
 final_file = 'Config3Reg_final.mat';
@@ -303,7 +303,7 @@ end
 if plot_data == 1
     [Hunq,ia,ic]=unique(Config3Reg.H);
     queryVec={'flapPosF1','flapPosF2','platPosz'};                          % desired signals to analyze
-    colorvec={'b','r','g','k'};                                             % color code based on wave height
+    colorvec={[0.8500 0.3250 0.0980],[0.929 0.694 0.125],[0.494 0.184 0.556]};                                          % color code based on wave height
     labelVec={'RAO deg/m','RAO deg/m','RAO m/m','RAO m/m','RAO deg/m'};
     for k=1:length(queryVec)
         % color code based upon Hsig
@@ -313,8 +313,8 @@ if plot_data == 1
             errorbar(2*pi./Config3Reg.T(goodidx),Config3Reg.final.(queryVec{k}).RAOmean(goodidx),Config3Reg.final.(queryVec{k}).RAOstd(goodidx)...
                 ,'s','Color',colorvec{ic(goodidx(1))},'MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
             hold on
-            scatter(2*pi./Config3Reg.T(goodidx),Config3Reg.final.(queryVec{k}).RAOmag(goodidx),'^',...
-                colorvec{ic(goodidx(1))},'filled');
+            %scatter(2*pi./Config3Reg.T(goodidx),Config3Reg.final.(queryVec{k}).RAOmag(goodidx),'^',...
+               % colorvec{ic(goodidx(1))},'filled');
             if k2==1;
                 xlabel('Freq (rad/s)')
                 ylabel(labelVec{k})

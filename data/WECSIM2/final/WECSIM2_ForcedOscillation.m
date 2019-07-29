@@ -1,14 +1,21 @@
+% KC variation: calculates the Keulegan Carpenter number for each forced
+% oscillation case
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; close all; clear;
 %% User Controls
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-process_inter=1; %1:process *.txt to *.mat, 0: loads *.mat
+process_inter=0; %1:process *.txt to *.mat, 0: loads *.mat
 process_final=1; % 1:process final data structure, 0: loads final *.mat
 plot_data=1; % 1 to generate plots
 
 % KsPoly=[34.399565513094930,53.132452294804445,0];                          % Nonlinear hydrostatic force resisting flap motion as func of theta (rad)
 % Iyy= 1.8587;                                                               % flap dry MOI about hinge (for added mass calc (kg m^2)
-    
+
+L_char= 0.558;                                                               % char length for KC number calculation, flap thickness at CG (m)
+L_velChar=0.558;                                                             % char length for velocity in KC number calculation, distance from axis of rot to flap CG (m)
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Directory info
@@ -109,7 +116,7 @@ if process_inter==1
         end
     end
     save(inter_file,'ForcedOsc');
-    clearvars -except ForcedOsc final_folder final_file inter_file inter_folder process_final plot_data base_folder
+    clearvars -except ForcedOsc final_folder final_file inter_file inter_folder process_final plot_data base_folder L_char L_velChar
     cd(base_folder)
 else
     load([inter_folder,'\',inter_file]);                                    % load 'inter' *.mat
@@ -140,136 +147,157 @@ if process_final==1;
     %% Find flap velocity, acceleration, torque signals. Trim data.
     filtNum=0.125*ones(8,1);                                                % FOSWEC sensor filter coefficients
     
-    % pre-allocation
-    startIdx=zeros(numFields,1);
-    peakLoc{numFields,1}=zeros(1,1);
-    peakmag{numFields,1}=zeros(1,1);
-    minLoc{numFields,1}=zeros(1,1);
-    minmag{numFields,1}=zeros(1,1);
-    goodidx{numFields,1}=zeros(1,1);
-    contFlag=zeros(numFields,1);
-    
-    for k=1:numFields;
-        if dtFlag(k)==0;                                                    % check constant sampling time
-            FiltPos=filtFB(filtNum,1,ForcedOsc.inter.(Fnames{k}).flapPosF1,[],2).*pi/180; % convert to radians
-            ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1=diff(FiltPos)./dt(k);
-            ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1=filtFB(filtNum,1, ...
-                diff(ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1)./dt(k),[],2);
-            ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1=filtFB(filtNum,1, ...
-                ForcedOsc.inter.(Fnames{k}).lcTyF1,[],2);
-        end
-        
-        % find the start of oscillations
-        startIdx(k)=findStartIdx(ForcedOsc.inter.(Fnames{k}).time,...           % Trim by start of flap forcing.
-            ForcedOsc.inter.(Fnames{k}).flapPosF1, 2, -4, ForcedOsc.T(k),4);    % Negative leadNum argument ensure full amp osc.
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(startIdx(k):end);
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1(startIdx(k):end);
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1(startIdx(k):end);
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1=FiltPos(startIdx(k):end);
-        
-        %% Detect and remove drift from neutral mean position
-        % theta from the resulting calculations. Uses matlab file exchange
-        % contribution 'peakfinder'.
-        
-        [peakLoc{k,1},peakmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1,...
-            [],-10,1,false,false);
-        [minLoc{k,1},minmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1,...
-            [],10,-1,false,false);
-        
-        % detect points within the assymetry threshold
-        assymThreshActual=assymThresh*ForcedOsc.theta_targ(k)*pi/180;
-        goodidx{k,1}=parseAssymetry(peakmag{k,1},peakLoc{k,1},minmag{k,1},minLoc{k,1},...
-            assymThreshActual, assymWin, length(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1));
-        
-        if max(diff(goodidx{k,1})) > 1;                                    % flag for discontinuous retained time series
-            contFlag(k)=1;
-        end
-        
-        % restrict consideration to good points
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(goodidx{k,1});
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1(goodidx{k,1});
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1(goodidx{k,1}).*-1; % correct flipped load cell
-        ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1(goodidx{k,1});
-        
-        % find peaks of retained points for windowing analysis
-        [peakLoc{k,1},peakmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1,...
-            [],-10,1,true,false);
-        
-        minL=min(floor(diff(peakLoc{k,1})/2));
-        
-        
-        %% Analyze parameters in time domain
-        
-        if ~isempty(peakLoc{k,1})
-            for k2=1:length(peakLoc{k,1})-1
-                
-                % window for velocity; find min acceleration each half-period
-                window=peakLoc{k,1}(k2):peakLoc{k,1}(k2+1);
-                winL=length(window);
-                
-                KsPoly=[34.399565513094930,53.132452294804445,0];                          % Nonlinear hydrostatic force resisting flap motion as func of theta (rad)
-                Iyy= 1.8587;                                                               % flap dry MOI about hinge (for added mass calc (kg m^2)
-
-                %for each window, define matrix x,b to solve for A in Ax=b.
-                Theta=ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1(window);
-                HydroStat=sign(Theta).*polyval(KsPoly,abs(Theta));
-                StateMat(:,2)=ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(window);
-                StateMat(:,1)=ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1(window);
-                TauTotMat(:,1)=(ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1(window)...
-                    -HydroStat);
-                StateMat(:,3)= ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(window)...
-                    .*abs(ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(window)); % for quadratic damping
-                
-                %% Calculation assuming Cv or Cd damping sources, solve Ax=b
-                CvOnly{k,1}(:,k2)=StateMat(:,[1,2])\TauTotMat;
-                CdOnly{k,1}(:,k2)=StateMat(:,[1,3])\TauTotMat;
-                
-                % calculate residuals
-                normErrCv{k,1}(k2,1)=norm(StateMat(:,[1,2])*CvOnly{k,1}(:,k2)-TauTotMat)./length(TauTotMat);
-                normErrCd{k,1}(k2,1)=norm(StateMat(:,[1,3])*CdOnly{k,1}(:,k2)-TauTotMat)./length(TauTotMat);
-                
-                
-                clear TauTotMat StateMat
+    for Step=1:2                                                            % Step 1 calculates assuming all Linear damping to get CD estimate.
+                                                                            % Step 2 subtracts CD contribution to solve for Cv(w).
+        % pre-allocation
+        startIdx=zeros(numFields,1);
+        peakLoc{numFields,1}=zeros(1,1);
+        peakmag{numFields,1}=zeros(1,1);
+        minLoc{numFields,1}=zeros(1,1);
+        minmag{numFields,1}=zeros(1,1);
+        goodidx{numFields,1}=zeros(1,1);
+        contFlag=zeros(numFields,1);                                           
+        for k=1:numFields;
+            if dtFlag(k)==0;                                                    % check constant sampling time
+                FiltPos=filtFB(filtNum,1,ForcedOsc.inter.(Fnames{k}).flapPosF1,[],2).*pi/180; % convert to radians
+                ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1=diff(FiltPos)./dt(k);
+                ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1=filtFB(filtNum,1, ...
+                    diff(ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1)./dt(k),[],2);
+                ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1=filtFB(filtNum,1, ...
+                    ForcedOsc.inter.(Fnames{k}).lcTyF1,[],2);
             end
             
-            % Asign to final data structure
-            ForcedOsc.final.AT(k,1)=mean(CvOnly{k}(1,:));
-            ForcedOsc.final.Astd(k,1)=std(CvOnly{k}(1,:));
-            ForcedOsc.final.CvTonly(k,1)=mean(CvOnly{k}(2,:));
-            ForcedOsc.final.CvTonlystd(k,1)=std(CvOnly{k}(2,:));
-            ForcedOsc.final.CdTonly(k,1)=mean(CdOnly{k}(2,:));
-            ForcedOsc.final.CdTonlystd(k,1)=std(CdOnly{k}(2,:));
+            % find the start of oscillations
+            startIdx(k)=findStartIdx(ForcedOsc.inter.(Fnames{k}).time,...           % Trim by start of flap forcing.
+                ForcedOsc.inter.(Fnames{k}).flapPosF1, 2, -4, ForcedOsc.T(k),4);    % Negative leadNum argument ensure full amp osc.
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(startIdx(k):end);
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1(startIdx(k):end);
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1(startIdx(k):end);
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1=FiltPos(startIdx(k):end);
             
+            %% Detect and remove drift from neutral mean position
+            % theta from the resulting calculations. Uses matlab file exchange
+            % contribution 'peakfinder'.
             
+            [peakLoc{k,1},peakmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1,...
+                [],-10,1,false,false);
+            [minLoc{k,1},minmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1,...
+                [],10,-1,false,false);
+            
+            % detect points within the assymetry threshold
+            assymThreshActual=assymThresh*ForcedOsc.theta_targ(k)*pi/180;
+            goodidx{k,1}=parseAssymetry(peakmag{k,1},peakLoc{k,1},minmag{k,1},minLoc{k,1},...
+                assymThreshActual, assymWin, length(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1));
+            
+            if max(diff(goodidx{k,1})) > 1;                                    % flag for discontinuous retained time series
+                contFlag(k)=1;
+            end
+            
+            % restrict consideration to good points
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(goodidx{k,1});
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1(goodidx{k,1});
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1(goodidx{k,1}).*-1; % correct flipped load cell
+            ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1=ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1(goodidx{k,1});
+            
+            % find peaks of retained points for windowing analysis
+            [peakLoc{k,1},peakmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1,...
+                [],-10,1,true,false);
+            % Estimate velocity amplitude to calculate K.C. number for the test
+            [~,Velpeakmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1,...
+                [],-10,1,true,false);
+            [~,Velminmag{k,1}]=peakfinder(ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1,...
+                [],10,-1,false,false);
+            
+            VelAmp{k,1}=(median(Velpeakmag{k,1})-median(Velminmag{k,1}))/2;
+            
+            minL=min(floor(diff(peakLoc{k,1})/2));
+            
+            ForcedOsc.KC(k,1)=(L_velChar/L_char).*VelAmp{k,1}.*ForcedOsc.T(k,1)
+            
+            %% Analyze parameters in time domain
+            
+            if ~isempty(peakLoc{k,1})
+                for k2=1:length(peakLoc{k,1})-1
+                    
+                    % window for velocity; find min acceleration each period
+                    window=peakLoc{k,1}(k2):peakLoc{k,1}(k2+1);
+                    winL=length(window);
+                    
+                    KsPoly=[34.399565513094930,53.132452294804445,0];                          % Nonlinear hydrostatic force resisting flap motion as func of theta (rad)
+                    Iyy= 1.8587;                                                               % flap dry MOI about hinge (for added mass calc (kg m^2))
+                    
+                    %for each window, define matrix x,b to solve for A in Ax=b.
+                    Theta=ForcedOsc.final.TimeDomain.(Fnames{k}).flapPosF1(window);
+                    HydroStat=sign(Theta).*polyval(KsPoly,abs(Theta));
+                    StateMat(:,2)=ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(window);
+                    StateMat(:,1)=ForcedOsc.final.TimeDomain.(Fnames{k}).flapAccF1(window);
+                    TauTotMat(:,1)=(ForcedOsc.final.TimeDomain.(Fnames{k}).flapT1(window)...
+                        -HydroStat);
+                    if Step==2;
+                        StateMat(:,3)= CD .* ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(window)...
+                            .*abs(ForcedOsc.final.TimeDomain.(Fnames{k}).flapVelF1(window)); % to adjust for torques due to quadratic damping
+                        %% Calculation for Cv, solve Ax=b
+                        
+                        CvOnly{k,1}(:,k2)=StateMat(:,[1,2])\(TauTotMat-StateMat(:,3));             % corrects for CD estimate
+                    else
+                        CvOnly{k,1}(:,k2)=StateMat(:,[1,2])\(TauTotMat);             % presumes entirely linear damping
+                    end
+                    
+                    % calculate residuals
+                    normErrCv{k,1}(k2,1)=norm(StateMat(:,[1,2])*CvOnly{k,1}(:,k2)-TauTotMat)./length(TauTotMat);
+                    
+                    clear TauTotMat StateMat
+                end
+                
+                % Asign to final data structure
+                ForcedOsc.final.AT(k,1)=mean(CvOnly{k}(1,:));
+                ForcedOsc.final.Astd(k,1)=std(CvOnly{k}(1,:));
+                ForcedOsc.final.CvTonly(k,1)=mean(CvOnly{k}(2,:));
+                ForcedOsc.final.CvTonlystd(k,1)=std(CvOnly{k}(2,:));
+                
+            end
         end
-    end
-    %% Calculate Cd based off of energy decrement linearization from Cv estimate.
-    % for each oscillation frequency
-    
-    % Method of Inman (2008), linearization of quadratic damping system.
-    
-    [Tunique,ia,ic]=unique(ForcedOsc.T);
-    for k=1:length(Tunique)
-        goodidx=find(ic==k);
+        %% Calculate Cd based off of energy decrement linearization from Cv estimate.
+        % for each oscillation frequency
         
-        fitVal=8.*(2*pi./ForcedOsc.T(goodidx)).*(ForcedOsc.theta_obs(goodidx).*(pi/180))./(3*pi);
-        figure;clf
-        plot(fitVal,ForcedOsc.final.CvTonly(goodidx),'ob');
-        hold on; grid on;
-        dampFit=polyfit(fitVal,ForcedOsc.final.CvTonly(goodidx),1);
-        plot(fitVal,polyval(dampFit,fitVal),'--k','LineWidth',1.2);
-        xlabel('8\omega_d \theta/3 \pi')
-        ylabel('c_{tot}')
-        legend('Experimental Data','Fit','Location','SouthEast')
+        % Method of Inman (2008), linearization of quadratic damping system.
+        if Step==1;
+            [Tunique,ia,ic]=unique(ForcedOsc.T);
+            for k=1:length(Tunique)
+                goodidx=find(ic==k);
+                
+                fitVal=8.*(2*pi./ForcedOsc.T(goodidx)).*(ForcedOsc.theta_obs(goodidx).*(pi/180))./(3*pi);
+                figure;clf
+                plot(fitVal,ForcedOsc.final.CvTonly(goodidx),'ob');
+                hold on; grid on;
+                dampFit=polyfit(fitVal,ForcedOsc.final.CvTonly(goodidx),1);
+                plot(fitVal,polyval(dampFit,fitVal),'--k','LineWidth',1.2);
+                xlabel('8\omega_d \theta/3 \pi')
+                ylabel('c_{tot}')
+                legend('Experimental Data','Fit','Location','SouthEast')
+                
+                % cquad is the quadratic damping component; clin is the total linear
+                % damping component (wave radiation damping and linear mechanical damping)
+                % for this frequency
+                
+                % exclude any retained zero estimate (from empty cases)
+                if ForcedOsc.final.CvTonly(goodidx)~=0;
+                    ForcedOsc.final.cquad(k)=dampFit(1);
+                    ForcedOsc.final.clin(k)=dampFit(2);
+                    ForcedOsc.final.Amass(k)=median(ForcedOsc.final.AT(goodidx,1));
+                    ForcedOsc.final.AmassStd(k)=std(ForcedOsc.final.AT(goodidx,1));
+                end
+            end
+            
+            % estimate CD
+            % we exclude non-physical estimates at high frequencies
+            CD=mean(ForcedOsc.final.cquad(ForcedOsc.final.cquad>=0),'omitnan');
+            ForcedOsc.final.CD_final=CD;
+            clear goodidx
+        end
         
-        % cquad is the quadratic damping component; clin is the total linear
-        % damping component (wave radiation damping and linear mechanical damping)
-        % for this frequency
-        ForcedOsc.final.cquad(k)=mean(dampFit(1)./fitVal);
-        ForcedOsc.final.clin(k)=dampFit(2);
-        ForcedOsc.final.Amass(k)=median(ForcedOsc.final.AT(goodidx,1));
-        ForcedOsc.final.AmassStd(k)=std(ForcedOsc.final.AT(goodidx,1));
     end
+    
     save(final_file,'ForcedOsc')
 else
     cd(final_folder)
@@ -279,12 +307,10 @@ end
 %% plotting functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if plot_data==1;
-    %% Plot of frequency vs Cv, Cd, Added mass for independent determination.
+    %% Plot of frequency vs Cv, Added mass for independent determination.
     
     close all;
     figure(1);clf;
-    figure(2);clf;
-    figure(3);clf;
     [Tunique,ia,ic]=unique(ForcedOsc.T);
     for k=1:length(Tunique)
         goodidx=find(ic==k);
@@ -352,46 +378,6 @@ if plot_data==1;
                     -2*ForcedOsc.final.CvTonlystd(goodidx(k2))+ForcedOsc.final.CvTonly(goodidx(k2))], 'LineStyle','-',...
                     'Color',cString,'LineWidth',1.2);
                 
-                %% Using Cd Calculation
-                figure(2)
-                subplot(2,1,2)
-                scatter(2*pi/(ForcedOsc.T(goodidx(k2)))+off...              % plot data
-                    ,ForcedOsc.final.AT(goodidx(k2))-Iyy,mType,'MarkerFaceColor',cString)
-                if k2==1;
-                    hold on;
-                    grid on;
-                    xlabel('\omega (rad/s)')
-                    ylabel('A (kg m^2)')
-                end
-                line([2*pi/(ForcedOsc.T(goodidx(k2)))+off, 2*pi/(ForcedOsc.T(goodidx(k2)))+off],... % error bars (+/- 2 std)
-                    [2*ForcedOsc.final.Astd(goodidx(k2))+ForcedOsc.final.AT(goodidx(k2)), ...
-                    ForcedOsc.final.AT(goodidx(k2))-2*ForcedOsc.final.Astd(goodidx(k2))], 'LineStyle','-',...
-                    'Color',cString,'LineWidth',1.2);
-                
-                subplot(2,1,1)
-                switch ForcedOsc.theta_targ(goodidx(k2))                    % format data by amplitude, plot
-                    case 10
-                        ax101=scatter(2*pi/(ForcedOsc.T(goodidx(k2)))+off...
-                            ,ForcedOsc.final.CdTonly(goodidx(k2)),mType,'MarkerFaceColor',cString);
-                    case 15
-                        ax151=scatter(2*pi/(ForcedOsc.T(goodidx(k2)))+off...
-                            ,ForcedOsc.final.CdTonly(goodidx(k2)),mType,'MarkerFaceColor',cString);
-                    case 20
-                        ax201=scatter(2*pi/(ForcedOsc.T(goodidx(k2)))+off...
-                            ,ForcedOsc.final.CdTonly(goodidx(k2)),mType,'MarkerFaceColor',cString);
-                end
-                
-                if k2==1;
-                    hold on;
-                    grid on;
-                    xlabel('\omega (rad/s)')
-                    ylabel('C_d')
-                end
-                line([2*pi/(ForcedOsc.T(goodidx(k2)))+off, 2*pi/(ForcedOsc.T(goodidx(k2)))+off],... % error bar (+/- 2 std)
-                    [2*ForcedOsc.final.CdTonlystd(goodidx(k2))+ForcedOsc.final.CdTonly(goodidx(k2)), ...
-                    -2*ForcedOsc.final.CdTonlystd(goodidx(k2))+ForcedOsc.final.CdTonly(goodidx(k2))], 'LineStyle','-',...
-                    'Color',cString,'LineWidth',1.2);
-                
             else
                 continue
             end
@@ -404,20 +390,6 @@ if plot_data==1;
     legend([ax10 ax15 ax20], {'\Delta \Theta=10^o','\Delta \Theta=15^o',...
         '\Delta \Theta=20^o'},'Location','SouthEast');
     
-    figure(2)
-    subplot(2,1,1)
-    legend([ax101 ax151 ax201], {'\Delta \Theta=10^o','\Delta \Theta=15^o',...
-        '\Delta \Theta=20^o'},'Location','NorthEast');
-    
-    %% Linear approximation plot of linear and quadratic damping ,combined calculation
-    
-    figure(3)
-    plot((2*pi)./Tunique,ForcedOsc.final.clin,'ob');
-    hold on; grid on;
-    plot((2*pi)./Tunique,ForcedOsc.final.cquad,'^r');
-    xlabel('Freq. (rad/s)')
-    ylabel('Damping')
-    legend('c_{lin}','c_{quad}','Location','NorthWest')
 end
 
- cd ..
+cd ..

@@ -1,7 +1,7 @@
 % Calculates Flap Response Amplitude Operator (pitch) for the regular
 % wave cases. Flap 1 and 2 are unlocked, locked in all other DOF
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc; close all; clear all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,7 +18,7 @@ plot_data = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 base_folder=pwd;
 final_folder = './Config2Reg';
-inter_folder = '../inter/Config2Reg';
+inter_folder = 'C:\Users\dforbus\FOSWEC\data\WECSIM2\inter\Config2Reg';
 log_folder = '../logs';
 inter_file = 'Config2Reg_inter.mat';
 final_file = 'Config2Reg_final.mat';
@@ -257,7 +257,7 @@ end
 if plot_data == 1
     [Hunq,ia,ic]=unique(Config2Reg.H);
     queryVec={'flapPosF1','flapPosF2'};                                     % desired signals to analyze
-    colorvec={'b','r','g','k'};                                             % color code based on wave height
+    colorvec={[0.8500 0.3250 0.0980],[0.929 0.694 0.125],[0.494 0.184 0.556]};                                                                     % color code based on wave height
     labelVec={'RAO deg/m','RAO deg/m','RAO m/m','RAO m/m','RAO deg/m'};
     for k=1:length(queryVec)
         % color code based upon Hsig
@@ -265,10 +265,10 @@ if plot_data == 1
             goodidx=find(ic==k2);
             figure(2*k-1);                                                  % error bar +/- 1 std of mean
             errorbar(2*pi./Config2Reg.T(goodidx),Config2Reg.final.(queryVec{k}).RAOmean(goodidx),Config2Reg.final.(queryVec{k}).RAOstd(goodidx)...
-                ,'^','MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
+                ,'s','Color',colorvec{ic(goodidx(1))},'MarkerFaceColor',colorvec{ic(goodidx(1))},'MarkerEdgeColor',colorvec{ic(goodidx(1))});
             hold on
-            scatter(2*pi./Config2Reg.T(goodidx),Config2Reg.final.(queryVec{k}).RAOmag(goodidx),[],...
-                colorvec{ic(goodidx(1))},'filled');
+%             scatter(2*pi./Config2Reg.T(goodidx),Config2Reg.final.(queryVec{k}).RAOmag(goodidx),[],...
+%                 colorvec{ic(goodidx(1))},'filled');
             if k2==1;
             xlabel('Freq (rad/s)')
             ylabel(labelVec{k})
